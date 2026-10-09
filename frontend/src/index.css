@@ -1,0 +1,72 @@
+/* Tailwind without preflight: the design was built on browser defaults,
+   so skipping the reset keeps it pixel-identical. */
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+/* Design tokens → utilities like bg-navy, text-muted, border-line */
+@theme {
+  --color-ink: #15171C;
+  --color-ink-2: #3A3F47;
+  --color-muted: #5A606B;
+  --color-subtle: #6B7079;
+  --color-slate: #4A4F58;
+  --color-navy: #0D2D52;
+  --color-navy-mid: #3E5F85;
+  --color-navy-light: #A9C0DA;
+  --color-navy-pale: #C9D6E6;
+  --color-navy-soft: #EEF3F8;
+  --color-line: #E4E8EE;
+  --color-line-soft: #EEF1F5;
+  --color-fill: #EFF2F6;
+  --color-page: #F5F7FA;
+  --color-border: #D5DBE3;
+  --color-success: #1F6B47;
+  --color-success-soft: #EAF5EF;
+  --color-danger: #B3261E;
+}
+
+@layer base {
+  body { margin: 0; font-family: 'Geist', system-ui, sans-serif; color: #15171C; background: #F5F7FA; font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased }
+  * { box-sizing: border-box }
+  a { color: #0D2D52 } a:hover { color: #0D2D52 }
+  button { font-family: inherit; cursor: pointer }
+}
+
+/* Reusable design-system classes (copied 1:1 from the prototype's style.css) */
+@layer components {
+  .serif { font-family: 'Instrument Serif', Georgia, serif; font-weight: 400; letter-spacing: -0.01em }
+  .card { background: #FFFFFF; border: 1px solid #E4E8EE; border-radius: 14px; box-shadow: 0 1px 2px rgba(13,45,82,.04), 0 6px 20px -8px rgba(13,45,82,.08) }
+  .hero { position: relative; overflow: hidden; padding: 36px 40px; border-radius: 18px; background: #EEF3F8; border: 1px solid #E1E8F0 }
+  .stat { padding: 22px 24px }
+  .chip { width: 36px; height: 36px; border-radius: 10px; background: #EEF3F8; color: #0D2D52; display: grid; place-items: center; margin-bottom: 16px }
+  .h2 { margin: 0; font-size: 15px; font-weight: 600; color: #15171C }
+  .sub { margin: 4px 0 0; font-size: 13px; color: #6B7079; line-height: 1.5 }
+  .muted { color: #5A606B }
+  .eyebrow { font-size: 12px; font-weight: 500; color: #6B7079; letter-spacing: .02em }
+  .num { font-size: 30px; font-weight: 500; color: #0D2D52; letter-spacing: -0.02em; margin-top: 10px; line-height: 1.1 }
+  .nav { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 44px; padding: 0 12px; border: 0; border-radius: 8px; font-size: 14px; font-weight: 500; text-align: left }
+  .nav:hover { box-shadow: inset 0 0 0 1px #E4E8EE }
+  .btn { min-height: 44px; padding: 0 18px; border-radius: 8px; border: 1px solid #D5DBE3; background: #FFFFFF; color: #15171C; font-size: 14px; font-weight: 500; display: inline-flex; align-items: center; justify-content: center; gap: 8px; white-space: nowrap }
+  .btn:hover { background: #F5F7FA }
+  .btn-p { background: #0D2D52; border-color: #0D2D52; color: #FFFFFF }
+  .btn-p:hover { background: #163F6E; border-color: #163F6E }
+  .tabs { display: flex; gap: 32px; border-bottom: 1px solid #E4E8EE }
+  .tab { min-height: 44px; padding: 0; margin-bottom: -1px; background: none; border: 0; border-bottom: 2px solid transparent; font-size: 14px; font-weight: 500 }
+  .seg { min-height: 40px; border: 0; border-radius: 6px; font-size: 14px; font-weight: 500 }
+  .inp { width: 100%; min-height: 44px; padding: 10px 12px; border: 1px solid #D5DBE3; border-radius: 8px; font: inherit; font-size: 14px; background: #FFFFFF; color: #15171C }
+  .inp:focus { outline: none; border-color: #0D2D52; box-shadow: 0 0 0 3px #EEF3F8 }
+  textarea.inp { min-height: 120px; resize: vertical; line-height: 1.55 }
+  .lbl { display: block; font-size: 13px; font-weight: 500; color: #3A3F47; margin-bottom: 8px }
+  .th { gap: 24px; padding: 12px 28px; border-bottom: 1px solid #E4E8EE; font-size: 12px; font-weight: 500; color: #6B7079 }
+  .tr { gap: 24px; padding: 16px 28px; border-bottom: 1px solid #EEF1F5; font-size: 14px; line-height: 1.55 }
+  .tr:hover { background: #F8FAFC }
+  .pill { display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 10px; border-radius: 999px; font-size: 12px; font-weight: 500; white-space: nowrap }
+  .icon-btn { width: 44px; height: 44px; border-radius: 8px; border: 1px solid #E4E8EE; background: #FFFFFF; color: #3A3F47; display: grid; place-items: center; position: relative }
+  .icon-btn:hover { background: #F5F7FA }
+  .linkbtn { border: 0; background: none; padding: 0; color: #0D2D52; font-size: 13px; font-weight: 500; min-height: 32px }
+  .linkbtn:hover { text-decoration: underline }
+  .bar { height: 6px; border-radius: 999px; background: #EEF1F5; overflow: hidden }
+  .scroll::-webkit-scrollbar { width: 10px } .scroll::-webkit-scrollbar-thumb { background: #D5DBE3; border-radius: 999px; border: 3px solid #F5F7FA }
+  .btn:focus-visible, .nav:focus-visible, .tab:focus-visible, .seg:focus-visible, .icon-btn:focus-visible, .linkbtn:focus-visible { outline: 2px solid #0D2D52; outline-offset: 2px }
+}

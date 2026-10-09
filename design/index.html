@@ -1,0 +1,769 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Campus ERP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app"></div>
+<template id="tpl">
+<div style="width: 100%; min-width: 1200px; height: 100vh; position: relative; overflow: hidden; background: #F5F7FA">
+
+<!-- ============ LOGIN ============ -->
+<sc-if value="{{isLogin}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; width: 100%; height: 100vh">
+<section style="flex-grow: 1; position: relative; overflow: hidden; background: #0D2D52; color: #FFFFFF; padding: 56px 80px; display: flex; flex-direction: column; justify-content: space-between">
+<div aria-hidden="true" style="position: absolute; right: -60px; bottom: -48px; width: 540px; height: 466px; overflow: hidden; opacity: .07"><img src="logo-white.png" alt="" style="width: 1487px; height: auto; margin-left: -74px; margin-top: -28px; display: block"></div>
+<img src="logo-white.png" alt="Arundathi Institute of Medical Sciences and Hospital" style="position: relative; width: 300px; height: auto; display: block; margin-left: -15px">
+<div style="position: relative; max-width: 600px">
+<div style="font-size: 12px; font-weight: 500; letter-spacing: .1em; text-transform: uppercase; color: #A9C0DA">Campus ERP · Academic Year 2026–27</div>
+<h1 class="serif" style="margin: 20px 0 0; font-size: 72px; line-height: 1.02">The whole campus, <span style="font-style: italic; color: #A9C0DA">in one place.</span></h1>
+<p style="margin: 24px 0 0; font-size: 17px; line-height: 1.65; max-width: 460px; color: #C9D6E6">Attendance, results, fees and notices for students. Attendance, marks and assignments for faculty. One portal, updated as it happens.</p>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 32px; margin-top: 56px; padding-top: 28px; border-top: 1px solid rgba(255,255,255,.14)">
+<div><div style="font-size: 14px; font-weight: 600">Attendance</div><div style="margin-top: 4px; font-size: 13px; line-height: 1.5; color: #A9C0DA">Updated as soon as faculty submit it.</div></div>
+<div><div style="font-size: 14px; font-weight: 600">Fees</div><div style="margin-top: 4px; font-size: 13px; line-height: 1.5; color: #A9C0DA">Pay online and download receipts.</div></div>
+<div><div style="font-size: 14px; font-weight: 600">Faculty</div><div style="margin-top: 4px; font-size: 13px; line-height: 1.5; color: #A9C0DA">Ask questions, get replies here.</div></div>
+</div>
+</div>
+<div style="position: relative; font-size: 12px; color: #A9C0DA">© 2026 · Student &amp; Faculty ERP</div>
+</section>
+<section style="width: 560px; flex-shrink: 0; background: #FFFFFF; border-left: 1px solid #E4E8EE; display: flex; align-items: center; justify-content: center">
+<div style="width: 380px; display: flex; flex-direction: column; gap: 24px">
+<div><h2 style="margin: 0; font-size: 26px; font-weight: 600; letter-spacing: -0.02em">Sign in</h2><p class="sub" style="font-size: 14px">Choose your portal to continue.</p></div>
+<div role="group" aria-label="Portal" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px; padding: 4px; background: #EFF2F6; border-radius: 9px">
+<button type="button" class="seg" onClick="{{pickStudent}}" style="background: {{roleS.bg}}; color: {{roleS.fg}}; box-shadow: {{roleS.sh}}">Student</button>
+<button type="button" class="seg" onClick="{{pickTeacher}}" style="background: {{roleT.bg}}; color: {{roleT.fg}}; box-shadow: {{roleT.sh}}">Faculty</button>
+</div>
+<div>
+<label class="lbl" for="login-id">{{idLabel}}</label>
+<input id="login-id" class="inp" value="{{loginId}}" onChange="{{onLoginId}}" onKeyDown="{{loginKey}}" placeholder="{{idPlaceholder}}" autocomplete="username">
+<sc-if value="{{loginErr}}" hint-placeholder-val="{{false}}"><div style="margin-top: 8px; font-size: 13px; color: #B3261E">Enter your {{idLabel}} to continue.</div></sc-if>
+</div>
+<div>
+<div style="display: flex; justify-content: space-between; align-items: baseline"><label class="lbl" for="login-pw">Password</label><button type="button" class="linkbtn" onClick="{{forgot}}">Forgot password?</button></div>
+<input id="login-pw" class="inp" type="password" placeholder="Password" autocomplete="current-password" onKeyDown="{{loginKey}}">
+</div>
+<button type="button" class="btn btn-p" style="width: 100%; min-height: 48px" onClick="{{signIn}}">Sign in to {{portalName}}</button>
+<p class="sub" style="margin: 0; text-align: center">Prototype: any ID signs you in.</p>
+</div>
+</section>
+</div>
+</sc-if>
+
+<!-- ============ STUDENT PORTAL ============ -->
+<sc-if value="{{isStudent}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; width: 100%; height: 100vh">
+<aside style="width: 248px; flex-shrink: 0; background: #FFFFFF; border-right: 1px solid #E4E8EE; display: flex; flex-direction: column; gap: 2px; padding: 24px 16px">
+<div style="padding: 4px 8px 22px; margin-bottom: 14px; border-bottom: 1px solid #EEF1F5">
+<img src="logo.png" alt="Arundathi Institute of Medical Sciences and Hospital" style="width: 188px; height: auto; display: block; margin-left: -9px">
+<span class="pill" style="margin-top: 14px; background: #EEF3F8; color: #0D2D52">Student portal</span>
+</div>
+<div class="eyebrow" style="padding: 2px 12px 8px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase">Menu</div>
+<button type="button" class="nav" onClick="{{sn.home.go}}" style="background: {{sn.home.bg}}; color: {{sn.home.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg><span style="flex-grow: 1">Dashboard</span></button>
+<button type="button" class="nav" onClick="{{sn.basic.go}}" style="background: {{sn.basic.bg}}; color: {{sn.basic.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg><span style="flex-grow: 1">Basic Information</span></button>
+<button type="button" class="nav" onClick="{{sn.academic.go}}" style="background: {{sn.academic.bg}}; color: {{sn.academic.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2z"></path><path d="M9 7h7"></path></svg><span style="flex-grow: 1">Academic Information</span></button>
+<button type="button" class="nav" onClick="{{sn.exams.go}}" style="background: {{sn.exams.bg}}; color: {{sn.exams.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg><span style="flex-grow: 1">Exam Time Tables</span></button>
+<button type="button" class="nav" onClick="{{sn.fees.go}}" style="background: {{sn.fees.bg}}; color: {{sn.fees.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20M6 15h4"></path></svg><span style="flex-grow: 1">Online Fee Payments</span></button>
+<button type="button" class="nav" onClick="{{sn.marks.go}}" style="background: {{sn.marks.bg}}; color: {{sn.marks.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"></path></svg><span style="flex-grow: 1">Marks Details</span></button>
+<button type="button" class="nav" onClick="{{sn.downloads.go}}" style="background: {{sn.downloads.bg}}; color: {{sn.downloads.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"></path></svg><span style="flex-grow: 1">Downloads</span></button>
+<button type="button" class="nav" onClick="{{sn.ask.go}}" style="background: {{sn.ask.bg}}; color: {{sn.ask.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H9l-5 4z"></path></svg><span style="flex-grow: 1">Ask Faculty</span><sc-if value="{{hasNewReplies}}" hint-placeholder-val="{{false}}"><span class="pill" style="background: #0D2D52; color: #FFFFFF; height: 20px; padding: 0 7px">{{newReplies}}</span></sc-if></button>
+<button type="button" class="nav" onClick="{{sn.contact.go}}" style="background: {{sn.contact.bg}}; color: {{sn.contact.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 3h4l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v4a2 2 0 0 1-2 2A17 17 0 0 1 3 5a2 2 0 0 1 2-2z"></path></svg><span style="flex-grow: 1">Contact Us</span></button>
+<div style="flex-grow: 1"></div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 16px 8px; border-top: 1px solid #EEF1F5">
+<div style="width: 36px; height: 36px; border-radius: 50%; background: #EFF2F6; color: #5A606B; display: grid; place-items: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg></div>
+<div style="min-width: 0"><div style="font-size: 14px; font-weight: 500">[Student Name]</div><div class="eyebrow">[Roll No.] · CSE</div></div>
+</div>
+<button type="button" class="nav" onClick="{{logout}}" style="background: transparent; color: #5A606B"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H5v16h4M14 8l4 4-4 4M18 12H9"></path></svg><span style="flex-grow: 1">Log out</span></button>
+</aside>
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+<header style="height: 72px; flex-shrink: 0; border-bottom: 1px solid #E4E8EE; display: flex; align-items: center; gap: 12px; padding: 0 48px">
+<h1 style="flex-grow: 1; margin: 0; font-size: 18px; font-weight: 600">{{sTitle}}</h1>
+<span class="eyebrow" style="margin-right: 8px">AY 2026–27 · II Year, I Sem</span>
+<button type="button" class="btn" onClick="{{toTeacher}}">Switch to faculty view</button>
+<button type="button" class="icon-btn" aria-label="Notifications" onClick="{{sn.home.go}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"></path><path d="M10 20a2 2 0 0 0 4 0"></path></svg><sc-if value="{{hasNewNotices}}" hint-placeholder-val="{{false}}"><span style="position: absolute; top: 10px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: #0D2D52; border: 2px solid #FFFFFF"></span></sc-if></button>
+</header>
+<main class="scroll" style="flex-grow: 1; overflow-y: auto; padding: 40px 48px 64px">
+
+<!-- Student: Dashboard -->
+<sc-if value="{{ss.home}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 40px">
+<div class="hero">
+<div aria-hidden="true" style="position: absolute; right: 40px; top: -36px; width: 300px; height: 259px; overflow: hidden; opacity: .09"><img src="logo.png" alt="" style="width: 826px; height: auto; margin-left: -41px; margin-top: -15px; display: block"></div>
+<div style="position: relative">
+<div class="eyebrow" style="color: #3E5F85">{{todayLong}}</div>
+<h2 class="serif" style="margin: 8px 0 0; font-size: 46px; line-height: 1.1; color: #0D2D52">{{greeting}}, [Student Name]</h2>
+<p style="margin: 8px 0 0; font-size: 15px; color: #3E5F85">B.Tech Computer Science &amp; Engineering · II Year, I Semester · Section A</p>
+<div style="display: flex; gap: 10px; margin-top: 24px"><button type="button" class="btn btn-p" onClick="{{sn.fees.go}}">Pay fees</button><button type="button" class="btn" onClick="{{goTimetable}}">View timetable</button></div>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+<div class="card stat"><span class="chip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></span><div class="eyebrow">Overall attendance</div><div class="num">{{overall}}%</div><div class="bar" style="margin-top: 12px"><div style="height: 6px; width: {{overall}}%; background: #0D2D52; border-radius: 999px"></div></div><div class="sub" style="margin-top: 8px">Minimum 75% required</div></div>
+<div class="card stat"><span class="chip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M21 20H3"></path></svg></span><div class="eyebrow">CGPA</div><div class="num">{{cgpa}}</div><div class="sub">After 2 semesters</div></div>
+<div class="card stat"><span class="chip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2" y="5" width="20" height="14" rx="2"></rect><path d="M2 10h20"></path></svg></span><div class="eyebrow">Fee due</div><div class="num">{{feeDue}}</div><div class="sub">{{feeDueNote}}</div></div>
+<div class="card stat"><span class="chip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4h6v3H9zM9 12h6M9 16h4"></path></svg></span><div class="eyebrow">Assignments pending</div><div class="num">{{pendingCount}}</div><div class="sub">{{nextDueNote}}</div></div>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 32px; align-items: start">
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Notifications</h2><p class="sub">From the college offices and your faculty</p></div>
+<div class="th" style="display: grid; grid-template-columns: 88px minmax(0, 1fr)"><div>Date</div><div>Notice</div></div>
+<sc-for list="{{notices}}" as="n" hint-placeholder-count="6">
+<div class="tr" style="display: grid; grid-template-columns: 88px minmax(0, 1fr)">
+<div class="muted" style="font-size: 13px">{{n.date}}</div>
+<div>
+<div style="display: flex; gap: 10px; align-items: flex-start"><span style="flex-grow: 1">{{n.msg}}</span><sc-if value="{{n.isNew}}" hint-placeholder-val="{{false}}"><span class="pill" style="background: #EEF3F8; color: #0D2D52">New</span></sc-if></div>
+<div class="eyebrow" style="margin-top: 4px">{{n.no}} · {{n.by}}</div>
+</div>
+</div>
+</sc-for>
+</div>
+<div style="display: flex; flex-direction: column; gap: 32px">
+<div class="card" style="padding: 24px 28px">
+<div style="display: flex; justify-content: space-between; align-items: center"><h2 class="h2">Today’s classes</h2><button type="button" class="linkbtn" onClick="{{goTimetable}}">Timetable</button></div>
+<sc-if value="{{noClasses}}" hint-placeholder-val="{{false}}"><p class="sub" style="margin-top: 16px">No classes scheduled today.</p></sc-if>
+<div style="display: flex; flex-direction: column; margin-top: 12px">
+<sc-for list="{{todayClasses}}" as="c" hint-placeholder-count="5">
+<div style="display: flex; gap: 16px; align-items: baseline; padding: 12px 0; border-bottom: 1px solid #EEF1F5">
+<div class="muted" style="width: 104px; flex-shrink: 0; font-size: 13px">{{c.time}}</div>
+<div style="font-size: 14px">{{c.name}}</div>
+</div>
+</sc-for>
+</div>
+</div>
+<div class="card" style="padding: 24px 28px">
+<div style="display: flex; justify-content: space-between; align-items: center"><h2 class="h2">Due soon</h2><button type="button" class="linkbtn" onClick="{{goAssignments}}">All assignments</button></div>
+<sc-if value="{{noPending}}" hint-placeholder-val="{{false}}"><p class="sub" style="margin-top: 16px">You’re all caught up.</p></sc-if>
+<div style="display: flex; flex-direction: column; margin-top: 12px">
+<sc-for list="{{pendingAssign}}" as="a" hint-placeholder-count="2">
+<div style="padding: 12px 0; border-bottom: 1px solid #EEF1F5">
+<div style="font-size: 14px">{{a.title}}</div>
+<div class="eyebrow" style="margin-top: 4px">{{a.subject}} · Due {{a.dueFmt}}</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- Student: Basic Information -->
+<sc-if value="{{ss.basic}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 32px; align-items: start">
+<div class="card" style="padding: 32px 28px">
+<div style="width: 88px; height: 88px; border-radius: 50%; background: #EFF2F6; color: #6B7079; display: grid; place-items: center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg></div>
+<div class="serif" style="font-size: 30px; margin-top: 20px">[Student Name]</div>
+<div class="muted" style="font-size: 14px; margin-top: 4px">Hall Ticket No. [Roll No.]</div>
+<span class="pill" style="background: #EAF5EF; color: #1F6B47; margin-top: 16px">Active · Regular</span>
+<div style="display: flex; flex-direction: column; margin-top: 24px; border-top: 1px solid #EEF1F5">
+<div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #EEF1F5; font-size: 14px"><span class="muted">Branch</span><span>CSE</span></div>
+<div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #EEF1F5; font-size: 14px"><span class="muted">Section</span><span>A</span></div>
+<div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #EEF1F5; font-size: 14px"><span class="muted">Year / Semester</span><span>II / I</span></div>
+<div style="display: flex; justify-content: space-between; padding: 12px 0; font-size: 14px"><span class="muted">Batch</span><span>2025–29</span></div>
+</div>
+</div>
+<div class="card">
+<div style="padding: 28px">
+<div style="display: flex; justify-content: space-between; align-items: center"><h2 class="h2">Personal details</h2><button type="button" class="btn" onClick="{{requestCorrection}}">Request correction</button></div>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 32px; margin-top: 24px">
+<sc-for list="{{personal}}" as="f" hint-placeholder-count="9">
+<div><div class="eyebrow">{{f.k}}</div><div style="font-size: 15px; margin-top: 6px">{{f.v}}</div></div>
+</sc-for>
+</div>
+</div>
+<div style="padding: 28px; border-top: 1px solid #EEF1F5">
+<h2 class="h2">Admission and academics</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 32px; margin-top: 24px">
+<sc-for list="{{admission}}" as="f" hint-placeholder-count="6">
+<div><div class="eyebrow">{{f.k}}</div><div style="font-size: 15px; margin-top: 6px">{{f.v}}</div></div>
+</sc-for>
+</div>
+</div>
+<div style="padding: 28px; border-top: 1px solid #EEF1F5">
+<h2 class="h2">Parent / guardian</h2>
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 32px; margin-top: 24px">
+<sc-for list="{{guardian}}" as="f" hint-placeholder-count="3">
+<div><div class="eyebrow">{{f.k}}</div><div style="font-size: 15px; margin-top: 6px">{{f.v}}</div></div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- Student: Academic Information -->
+<sc-if value="{{ss.academic}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 32px">
+<div role="tablist" aria-label="Academic information" class="tabs">
+<button type="button" role="tab" class="tab" onClick="{{at.attendance.go}}" style="color: {{at.attendance.fg}}; border-bottom-color: {{at.attendance.bd}}">Attendance</button>
+<button type="button" role="tab" class="tab" onClick="{{at.timetable.go}}" style="color: {{at.timetable.fg}}; border-bottom-color: {{at.timetable.bd}}">Class timetable</button>
+<button type="button" role="tab" class="tab" onClick="{{at.assignments.go}}" style="color: {{at.assignments.fg}}; border-bottom-color: {{at.assignments.bd}}">Assignments</button>
+<button type="button" role="tab" class="tab" onClick="{{at.syllabus.go}}" style="color: {{at.syllabus.fg}}; border-bottom-color: {{at.syllabus.bd}}">Syllabus progress</button>
+</div>
+
+<sc-if value="{{af.attendance}}" hint-placeholder-val="{{true}}">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start">
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Subject-wise attendance</h2><p class="sub">Updated as soon as your faculty submits attendance</p></div>
+<div class="th" style="display: grid; grid-template-columns: minmax(0, 1fr) 64px 72px 200px"><div>Subject</div><div>Held</div><div>Attended</div><div>Percentage</div></div>
+<sc-for list="{{attendance}}" as="r" hint-placeholder-count="8">
+<div class="tr" style="display: grid; grid-template-columns: minmax(0, 1fr) 64px 72px 200px; align-items: center">
+<div>{{r.name}}</div>
+<div class="muted">{{r.held}}</div>
+<div class="muted">{{r.att}}</div>
+<div style="display: flex; align-items: center; gap: 12px">
+<div class="bar" style="flex-grow: 1"><div style="height: 6px; width: {{r.pct}}%; background: {{r.color}}; border-radius: 999px"></div></div>
+<span style="width: 40px; text-align: right; font-weight: 500; color: {{r.color}}">{{r.pct}}%</span>
+</div>
+</div>
+</sc-for>
+</div>
+<div class="card" style="padding: 28px; display: flex; flex-direction: column; gap: 24px">
+<h2 class="h2">Overall</h2>
+<div style="align-self: center; width: 168px; height: 168px; border-radius: 50%; background: conic-gradient(#0D2D52 0deg {{overallDeg}}deg, #EEF1F5 {{overallDeg}}deg 360deg); display: grid; place-items: center">
+<div style="width: 148px; height: 148px; border-radius: 50%; background: #FFFFFF; display: grid; place-items: center; text-align: center"><div><div class="serif" style="font-size: 44px; line-height: 1">{{overall}}%</div><div class="eyebrow" style="margin-top: 6px">{{attTotal}} classes</div></div></div>
+</div>
+<div style="display: flex; flex-direction: column; border-top: 1px solid #EEF1F5">
+<div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #EEF1F5; font-size: 14px"><span class="muted">Attended</span><span>{{attAttended}}</span></div>
+<div style="display: flex; justify-content: space-between; padding: 12px 0; font-size: 14px"><span class="muted">Missed</span><span>{{attMissed}}</span></div>
+</div>
+<p class="sub" style="margin: 0; padding: 14px 16px; border-radius: 8px; background: #F5F7FA">{{lowNote}}</p>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{af.timetable}}" hint-placeholder-val="{{false}}">
+<div class="card" style="padding: 28px">
+<div style="display: flex; justify-content: space-between; align-items: center"><div><h2 class="h2">Weekly timetable</h2><p class="sub">II B.Tech CSE · Section A</p></div><button type="button" class="btn" onClick="{{dlTimetable}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12M7 10l5 5 5-5M4 21h16"></path></svg>Download PDF</button></div>
+<div style="display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px; margin-top: 28px">
+<sc-for list="{{ttCells}}" as="c" hint-placeholder-count="56">
+<div style="min-height: 52px; padding: 8px; border-radius: 8px; border: 1px solid {{c.bd}}; display: grid; place-items: center; text-align: center; background: {{c.bg}}; color: {{c.fg}}; font-size: {{c.size}}px; font-weight: {{c.w}}">{{c.t}}</div>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 32px; margin-top: 28px; padding-top: 24px; border-top: 1px solid #EEF1F5; font-size: 13px">
+<sc-for list="{{ttLegend}}" as="l" hint-placeholder-count="8">
+<div><span style="font-weight: 600">{{l.code}}</span> <span class="muted">{{l.name}}</span></div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<sc-if value="{{af.assignments}}" hint-placeholder-val="{{false}}">
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Assignments</h2><p class="sub">New assignments from your faculty appear here instantly</p></div>
+<div class="th" style="display: grid; grid-template-columns: minmax(0, 1fr) 130px 120px 120px"><div>Assignment</div><div>Due</div><div>Status</div><div></div></div>
+<sc-for list="{{sAssign}}" as="a" hint-placeholder-count="3">
+<div class="tr" style="display: grid; grid-template-columns: minmax(0, 1fr) 130px 120px 120px; align-items: center">
+<div><div>{{a.title}}</div><div class="eyebrow" style="margin-top: 2px">{{a.subject}}</div></div>
+<div class="muted">{{a.dueFmt}}</div>
+<div><span class="pill" style="background: {{a.pillBg}}; color: {{a.pillFg}}">{{a.status}}</span></div>
+<div style="display: flex; justify-content: flex-end">
+<sc-if value="{{a.canSubmit}}" hint-placeholder-val="{{true}}"><button type="button" class="btn btn-p" onClick="{{a.submit}}">Submit</button></sc-if>
+</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<sc-if value="{{af.syllabus}}" hint-placeholder-val="{{false}}">
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Syllabus progress</h2><p class="sub">Five units per subject</p></div>
+<div class="th" style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 220px"><div>Subject</div><div>Now covering</div><div>Completed</div></div>
+<sc-for list="{{syllabus}}" as="y" hint-placeholder-count="6">
+<div class="tr" style="display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) 220px; align-items: center">
+<div>{{y.name}}</div>
+<div class="muted">Unit {{y.unit}} · {{y.topic}}</div>
+<div style="display: flex; align-items: center; gap: 12px"><div class="bar" style="flex-grow: 1"><div style="height: 6px; width: {{y.pct}}%; background: #0D2D52; border-radius: 999px"></div></div><span style="width: 40px; text-align: right">{{y.pct}}%</span></div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<!-- Student: Exam Time Tables -->
+<sc-if value="{{ss.exams}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 32px">
+<div role="tablist" aria-label="Exam type" class="tabs">
+<button type="button" role="tab" class="tab" onClick="{{et.mid1.go}}" style="color: {{et.mid1.fg}}; border-bottom-color: {{et.mid1.bd}}">Mid-I</button>
+<button type="button" role="tab" class="tab" onClick="{{et.mid2.go}}" style="color: {{et.mid2.fg}}; border-bottom-color: {{et.mid2.bd}}">Mid-II</button>
+<button type="button" role="tab" class="tab" onClick="{{et.sem.go}}" style="color: {{et.sem.fg}}; border-bottom-color: {{et.sem.bd}}">Semester end</button>
+</div>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start">
+<div class="card" style="overflow: hidden">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 24px 28px 20px"><div><h2 class="h2">{{examTitle}}</h2><p class="sub">II B.Tech I Semester · CSE</p></div><button type="button" class="btn btn-p" onClick="{{dlHallTicket}}">Download hall ticket</button></div>
+<div class="th" style="display: grid; grid-template-columns: 120px 56px 170px minmax(0, 1fr) 90px"><div>Date</div><div>Day</div><div>Time</div><div>Subject</div><div>Code</div></div>
+<sc-for list="{{examRows}}" as="e" hint-placeholder-count="6">
+<div class="tr" style="display: grid; grid-template-columns: 120px 56px 170px minmax(0, 1fr) 90px; align-items: center">
+<div style="font-weight: 500">{{e.date}}</div><div class="muted">{{e.day}}</div><div class="muted">{{e.time}}</div><div>{{e.sub}}</div><div class="muted">{{e.code}}</div>
+</div>
+</sc-for>
+</div>
+<div class="card" style="padding: 28px">
+<h2 class="h2">Instructions</h2>
+<ol style="margin: 16px 0 0; padding-left: 18px; display: flex; flex-direction: column; gap: 12px; font-size: 14px; line-height: 1.55; color: #3A3F47">
+<li>Report to the exam hall 15 minutes before the start time.</li>
+<li>Carry your hall ticket and college ID card.</li>
+<li>Mobile phones and smart watches are not allowed.</li>
+</ol>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- Student: Online Fee Payments -->
+<sc-if value="{{ss.fees}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 32px">
+<div role="tablist" aria-label="Fees" class="tabs">
+<button type="button" role="tab" class="tab" onClick="{{ft.pay.go}}" style="color: {{ft.pay.fg}}; border-bottom-color: {{ft.pay.bd}}">Pay fees</button>
+<button type="button" role="tab" class="tab" onClick="{{ft.receipts.go}}" style="color: {{ft.receipts.fg}}; border-bottom-color: {{ft.receipts.bd}}">Receipts</button>
+</div>
+<sc-if value="{{ff.pay}}" hint-placeholder-val="{{true}}">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 32px; align-items: start">
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Term 2 fee breakdown</h2><p class="sub">Last date without fine: 10 Oct 2026</p></div>
+<div class="th" style="display: grid; grid-template-columns: minmax(0, 1fr) 160px"><div>Particulars</div><div style="text-align: right">Amount</div></div>
+<sc-for list="{{feeItems}}" as="f" hint-placeholder-count="4">
+<div class="tr" style="display: grid; grid-template-columns: minmax(0, 1fr) 160px"><div>{{f.desc}}</div><div style="text-align: right">{{f.amt}}</div></div>
+</sc-for>
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 160px; gap: 24px; padding: 20px 28px; font-size: 15px; font-weight: 600"><div>Total payable</div><div style="text-align: right">{{feeTotal}}</div></div>
+</div>
+<sc-if value="{{feeOpen}}" hint-placeholder-val="{{true}}">
+<div class="card" style="padding: 28px; display: flex; flex-direction: column; gap: 16px">
+<h2 class="h2">Payment method</h2>
+<div role="radiogroup" aria-label="Payment method" style="display: flex; flex-direction: column; gap: 8px">
+<button type="button" role="radio" aria-checked="{{pm.upi.on}}" onClick="{{pm.upi.go}}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 16px; border-radius: 8px; border: 1px solid {{pm.upi.bd}}; background: {{pm.upi.bg}}; font-size: 14px; color: #15171C; text-align: left"><span style="width: 16px; height: 16px; border-radius: 50%; border: 5px solid {{pm.upi.dot}}; background: #FFFFFF"></span>UPI</button>
+<button type="button" role="radio" aria-checked="{{pm.card.on}}" onClick="{{pm.card.go}}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 16px; border-radius: 8px; border: 1px solid {{pm.card.bd}}; background: {{pm.card.bg}}; font-size: 14px; color: #15171C; text-align: left"><span style="width: 16px; height: 16px; border-radius: 50%; border: 5px solid {{pm.card.dot}}; background: #FFFFFF"></span>Debit / credit card</button>
+<button type="button" role="radio" aria-checked="{{pm.netbanking.on}}" onClick="{{pm.netbanking.go}}" style="display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 0 16px; border-radius: 8px; border: 1px solid {{pm.netbanking.bd}}; background: {{pm.netbanking.bg}}; font-size: 14px; color: #15171C; text-align: left"><span style="width: 16px; height: 16px; border-radius: 50%; border: 5px solid {{pm.netbanking.dot}}; background: #FFFFFF"></span>Net banking</button>
+</div>
+<button type="button" class="btn btn-p" style="min-height: 48px; margin-top: 8px" onClick="{{payNow}}">Pay {{feeTotal}}</button>
+<p class="sub" style="margin: 0; text-align: center">You’ll be redirected to the bank’s secure gateway. We never store card details.</p>
+</div>
+</sc-if>
+<sc-if value="{{feePaid}}" hint-placeholder-val="{{false}}">
+<div class="card" style="padding: 36px 28px; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px">
+<div style="width: 52px; height: 52px; border-radius: 50%; background: #EAF5EF; color: #1F6B47; display: grid; place-items: center"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg></div>
+<div class="serif" style="font-size: 28px; margin-top: 8px">Payment successful</div>
+<div class="sub">Receipt {{lastReceipt}}</div>
+<button type="button" class="btn" style="margin-top: 12px" onClick="{{ft.receipts.go}}">View receipts</button>
+</div>
+</sc-if>
+</div>
+</sc-if>
+<sc-if value="{{ff.receipts}}" hint-placeholder-val="{{false}}">
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Payment receipts</h2></div>
+<div class="th" style="display: grid; grid-template-columns: 190px 110px minmax(0, 1fr) 120px 100px"><div>Receipt no.</div><div>Date</div><div>Description</div><div style="text-align: right">Amount</div><div></div></div>
+<sc-for list="{{receipts}}" as="r" hint-placeholder-count="2">
+<div class="tr" style="display: grid; grid-template-columns: 190px 110px minmax(0, 1fr) 120px 100px; align-items: center">
+<div style="font-weight: 500">{{r.no}}</div><div class="muted">{{r.date}}</div><div>{{r.desc}}</div><div style="text-align: right">{{r.amt}}</div>
+<div style="display: flex; justify-content: flex-end"><button type="button" class="btn" onClick="{{r.dl}}">PDF</button></div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<!-- Student: Marks Details -->
+<sc-if value="{{ss.marks}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 32px">
+<div role="tablist" aria-label="Marks" class="tabs">
+<button type="button" role="tab" class="tab" onClick="{{mt.internal.go}}" style="color: {{mt.internal.fg}}; border-bottom-color: {{mt.internal.bd}}">Internal marks</button>
+<button type="button" role="tab" class="tab" onClick="{{mt.sem.go}}" style="color: {{mt.sem.fg}}; border-bottom-color: {{mt.sem.bd}}">Semester results</button>
+</div>
+<sc-if value="{{mf.internal}}" hint-placeholder-val="{{true}}">
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Internal assessment</h2><p class="sub">II B.Tech I Semester · Mid-II marks appear after evaluation</p></div>
+<div class="th" style="display: grid; grid-template-columns: minmax(0, 1fr) 110px 130px 110px 110px"><div>Subject</div><div>Mid-I / 30</div><div>Assignment / 5</div><div>Mid-II / 30</div><div>Total / 35</div></div>
+<sc-for list="{{internal}}" as="m" hint-placeholder-count="6">
+<div class="tr" style="display: grid; grid-template-columns: minmax(0, 1fr) 110px 130px 110px 110px; align-items: center">
+<div>{{m.sub}}</div><div>{{m.mid1}}</div><div>{{m.asg}}</div><div class="muted">{{m.mid2}}</div><div style="font-weight: 600">{{m.total}}</div>
+</div>
+</sc-for>
+</div>
+</sc-if>
+<sc-if value="{{mf.sem}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start">
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Semester results</h2></div>
+<div class="th" style="display: grid; grid-template-columns: minmax(0, 1fr) 100px 100px 220px"><div>Semester</div><div>Credits</div><div>Result</div><div>SGPA</div></div>
+<sc-for list="{{semResults}}" as="r" hint-placeholder-count="2">
+<div class="tr" style="display: grid; grid-template-columns: minmax(0, 1fr) 100px 100px 220px; align-items: center">
+<div><div>{{r.sem}}</div><div class="eyebrow" style="margin-top: 2px">Published {{r.pub}}</div></div>
+<div class="muted">{{r.credits}}</div>
+<div><span class="pill" style="background: #EAF5EF; color: #1F6B47">{{r.result}}</span></div>
+<div style="display: flex; align-items: center; gap: 12px"><div class="bar" style="flex-grow: 1"><div style="height: 6px; width: {{r.width}}%; background: #0D2D52; border-radius: 999px"></div></div><span style="width: 40px; text-align: right; font-weight: 500">{{r.sgpa}}</span></div>
+</div>
+</sc-for>
+</div>
+<div class="card" style="padding: 28px">
+<div class="eyebrow">Cumulative GPA</div>
+<div class="serif" style="font-size: 64px; line-height: 1; margin-top: 12px">{{cgpa}}</div>
+<p class="sub" style="margin-top: 12px">40 of 40 credits earned · no backlogs</p>
+<button type="button" class="btn" style="margin-top: 20px; width: 100%" onClick="{{dlMemo}}">Download marks memo</button>
+</div>
+</div>
+</sc-if>
+</div>
+</sc-if>
+
+<!-- Student: Downloads -->
+<sc-if value="{{ss.downloads}}" hint-placeholder-val="{{false}}">
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Documents</h2><p class="sub">Hall tickets, calendars, syllabus and forms</p></div>
+<sc-for list="{{downloads}}" as="d" hint-placeholder-count="6">
+<div class="tr" style="display: flex; align-items: center; gap: 16px">
+<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#6B7079" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"></path><path d="M14 3v6h6"></path></svg>
+<div style="flex-grow: 1"><div>{{d.name}}</div><div class="eyebrow" style="margin-top: 2px">{{d.meta}}</div></div>
+<button type="button" class="btn" onClick="{{d.dl}}">Download</button>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<!-- Student: Ask Faculty -->
+<sc-if value="{{ss.ask}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 32px; align-items: start">
+<div class="card" style="padding: 28px; display: flex; flex-direction: column; gap: 20px">
+<div><h2 class="h2">Ask a question</h2><p class="sub">Your faculty sees it in their Student Queries inbox</p></div>
+<div><label class="lbl" for="q-to">Subject faculty</label>
+<select id="q-to" class="inp" value="{{qTo}}" onChange="{{onQTo}}"><option>Data Structures</option><option>Discrete Mathematics</option><option>Digital Logic Design</option><option>OOP through Java</option><option>Computer Organization</option><option>Class Teacher / Mentor</option></select></div>
+<div><label class="lbl" for="q-sub">Topic</label><input id="q-sub" class="inp" value="{{qSubject}}" onChange="{{onQSubject}}" placeholder="e.g. Doubt in AVL rotations"></div>
+<div><label class="lbl" for="q-msg">Message</label><textarea id="q-msg" class="inp" value="{{qText}}" onChange="{{onQText}}" placeholder="Describe your question"></textarea></div>
+<button type="button" class="btn btn-p" onClick="{{sendQuery}}">Send to faculty</button>
+</div>
+<div style="display: flex; flex-direction: column; gap: 16px">
+<h2 class="h2">My questions</h2>
+<sc-for list="{{myQueries}}" as="q" hint-placeholder-count="1">
+<div class="card" style="padding: 24px 28px; display: flex; flex-direction: column; gap: 12px">
+<div style="display: flex; justify-content: space-between; gap: 16px; align-items: flex-start">
+<div><div style="font-size: 15px; font-weight: 500">{{q.subject}}</div><div class="eyebrow" style="margin-top: 4px">To {{q.to}} faculty · {{q.date}}</div></div>
+<span class="pill" style="background: {{q.pillBg}}; color: {{q.pillFg}}">{{q.status}}</span>
+</div>
+<div style="font-size: 14px; line-height: 1.6; color: #3A3F47">{{q.msg}}</div>
+<sc-if value="{{q.hasReply}}" hint-placeholder-val="{{true}}">
+<div style="padding: 16px 18px; border-radius: 8px; background: #F5F7FA">
+<div class="eyebrow">Faculty reply</div>
+<div style="font-size: 14px; line-height: 1.6; margin-top: 6px">{{q.reply}}</div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<!-- Student: Contact Us -->
+<sc-if value="{{ss.contact}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 32px; align-items: start">
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Offices</h2><p class="sub">Reach the right desk directly</p></div>
+<div class="th" style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr)"><div>Office</div><div>Contact</div><div>Hours</div></div>
+<sc-for list="{{contacts}}" as="c" hint-placeholder-count="4">
+<div class="tr" style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr)">
+<div><div style="font-weight: 500">{{c.dept}}</div><div class="eyebrow" style="margin-top: 2px">{{c.desc}}</div></div>
+<div><div>[Phone number]</div><div class="muted" style="font-size: 13px">[{{c.mail}} email]</div></div>
+<div class="muted">{{c.hours}}</div>
+</div>
+</sc-for>
+</div>
+<div class="card" style="padding: 28px">
+<h2 class="h2">Campus address</h2>
+<p style="margin: 12px 0 0; font-size: 14px; line-height: 1.7; color: #3A3F47">[Street address]<br>[City, State – PIN]</p>
+</div>
+</div>
+</sc-if>
+
+</main>
+</div>
+</div>
+</sc-if>
+
+<!-- ============ FACULTY PORTAL ============ -->
+<sc-if value="{{isTeacher}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; width: 100%; height: 100vh">
+<aside style="width: 248px; flex-shrink: 0; background: #FFFFFF; border-right: 1px solid #E4E8EE; display: flex; flex-direction: column; gap: 2px; padding: 24px 16px">
+<div style="padding: 4px 8px 22px; margin-bottom: 14px; border-bottom: 1px solid #EEF1F5">
+<img src="logo.png" alt="Arundathi Institute of Medical Sciences and Hospital" style="width: 188px; height: auto; display: block; margin-left: -9px">
+<span class="pill" style="margin-top: 14px; background: #EEF3F8; color: #0D2D52">Faculty portal</span>
+</div>
+<div class="eyebrow" style="padding: 2px 12px 8px; font-size: 11px; letter-spacing: .1em; text-transform: uppercase">Menu</div>
+<button type="button" class="nav" onClick="{{tn.home.go}}" style="background: {{tn.home.bg}}; color: {{tn.home.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path></svg><span style="flex-grow: 1">Dashboard</span></button>
+<button type="button" class="nav" onClick="{{tn.attendance.go}}" style="background: {{tn.attendance.bg}}; color: {{tn.attendance.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4h6v3H9zM9 13l2 2 4-4"></path></svg><span style="flex-grow: 1">Attendance</span></button>
+<button type="button" class="nav" onClick="{{tn.marks.go}}" style="background: {{tn.marks.bg}}; color: {{tn.marks.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 20h4L20 8l-4-4L4 16z"></path></svg><span style="flex-grow: 1">Marks Entry</span></button>
+<button type="button" class="nav" onClick="{{tn.assignments.go}}" style="background: {{tn.assignments.bg}}; color: {{tn.assignments.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2z"></path><path d="M9 7h7"></path></svg><span style="flex-grow: 1">Assignments</span></button>
+<button type="button" class="nav" onClick="{{tn.notices.go}}" style="background: {{tn.notices.bg}}; color: {{tn.notices.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 10v4l12 5V5z"></path><path d="M15 9h2a3 3 0 0 1 0 6h-2"></path></svg><span style="flex-grow: 1">Notice Board</span></button>
+<button type="button" class="nav" onClick="{{tn.queries.go}}" style="background: {{tn.queries.bg}}; color: {{tn.queries.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H9l-5 4z"></path></svg><span style="flex-grow: 1">Student Queries</span><sc-if value="{{hasPendingQ}}" hint-placeholder-val="{{false}}"><span class="pill" style="background: #0D2D52; color: #FFFFFF; height: 20px; padding: 0 7px">{{pendingQ}}</span></sc-if></button>
+<button type="button" class="nav" onClick="{{tn.leave.go}}" style="background: {{tn.leave.bg}}; color: {{tn.leave.fg}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg><span style="flex-grow: 1">Leave</span></button>
+<div style="flex-grow: 1"></div>
+<div style="display: flex; align-items: center; gap: 12px; padding: 16px 8px; border-top: 1px solid #EEF1F5">
+<div style="width: 36px; height: 36px; border-radius: 50%; background: #EFF2F6; color: #5A606B; display: grid; place-items: center; flex-shrink: 0"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c0-4 4-6 8-6s8 2 8 6"></path></svg></div>
+<div style="min-width: 0"><div style="font-size: 14px; font-weight: 500">[Faculty Name]</div><div class="eyebrow">Asst. Professor · CSE</div></div>
+</div>
+<button type="button" class="nav" onClick="{{logout}}" style="background: transparent; color: #5A606B"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H5v16h4M14 8l4 4-4 4M18 12H9"></path></svg><span style="flex-grow: 1">Log out</span></button>
+</aside>
+<div style="flex-grow: 1; min-width: 0; display: flex; flex-direction: column">
+<header style="height: 72px; flex-shrink: 0; border-bottom: 1px solid #E4E8EE; display: flex; align-items: center; gap: 12px; padding: 0 48px">
+<h1 style="flex-grow: 1; margin: 0; font-size: 18px; font-weight: 600">{{tTitle}}</h1>
+<span class="eyebrow" style="margin-right: 8px">Academic Year 2026–27</span>
+<button type="button" class="btn" onClick="{{toStudent}}">Switch to student view</button>
+<button type="button" class="icon-btn" aria-label="Student queries" onClick="{{tn.queries.go}}"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"></path><path d="M10 20a2 2 0 0 0 4 0"></path></svg><sc-if value="{{hasPendingQ}}" hint-placeholder-val="{{false}}"><span style="position: absolute; top: 10px; right: 11px; width: 8px; height: 8px; border-radius: 50%; background: #0D2D52; border: 2px solid #FFFFFF"></span></sc-if></button>
+</header>
+<main class="scroll" style="flex-grow: 1; overflow-y: auto; padding: 40px 48px 64px">
+
+<!-- Faculty: Dashboard -->
+<sc-if value="{{ts.home}}" hint-placeholder-val="{{true}}">
+<div style="display: flex; flex-direction: column; gap: 40px">
+<div class="hero">
+<div aria-hidden="true" style="position: absolute; right: 40px; top: -36px; width: 300px; height: 259px; overflow: hidden; opacity: .09"><img src="logo.png" alt="" style="width: 826px; height: auto; margin-left: -41px; margin-top: -15px; display: block"></div>
+<div style="position: relative">
+<div class="eyebrow" style="color: #3E5F85">{{todayLong}}</div>
+<h2 class="serif" style="margin: 8px 0 0; font-size: 46px; line-height: 1.1; color: #0D2D52">{{greeting}}, [Faculty Name]</h2>
+<p style="margin: 8px 0 0; font-size: 15px; color: #3E5F85">Computer Science &amp; Engineering · II CSE-A, II CSE-B, III CSE-A</p>
+<div style="display: flex; gap: 10px; margin-top: 24px"><button type="button" class="btn btn-p" onClick="{{tn.attendance.go}}">Take attendance</button><button type="button" class="btn" onClick="{{tn.notices.go}}">Post notice</button></div>
+<div style="display: inline-flex; gap: 10px; align-items: center; margin-top: 20px; padding: 8px 14px 8px 8px; border-radius: 999px; background: #FFFFFF; font-size: 13px; color: #3A3F47"><span class="pill" style="background: #0D2D52; color: #FFFFFF">Today</span>Department staff meeting at 4:00 PM, CSE conference room</div>
+</div>
+</div>
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+<div class="card stat"><span class="chip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span><div class="eyebrow">Classes today</div><div class="num">5</div><div class="sub">2 done · 1 in progress</div></div>
+<div class="card stat"><span class="chip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 4h16v12H9l-5 4z"></path></svg></span><div class="eyebrow">Pending queries</div><div class="num">{{pendingQ}}</div><div class="sub">From your students</div></div>
+<div class="card stat"><span class="chip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="4" width="14" height="17" rx="2"></rect><path d="M9 4h6v3H9zM9 12h6M9 16h4"></path></svg></span><div class="eyebrow">Submissions</div><div class="num">{{subTotal}}</div><div class="sub">Across {{assignCount}} assignments</div></div>
+<div class="card stat"><span class="chip"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 19V5a2 2 0 0 1 2-2h14v16H6a2 2 0 0 0-2 2z"></path><path d="M9 7h7"></path></svg></span><div class="eyebrow">Syllabus covered</div><div class="num">63%</div><div class="bar" style="margin-top: 12px"><div style="height: 6px; width: 63%; background: #0D2D52; border-radius: 999px"></div></div><div class="sub" style="margin-top: 8px">Average across classes</div></div>
+</div>
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Today’s classes</h2><p class="sub">{{todayShort}}</p></div>
+<div class="th" style="display: grid; grid-template-columns: 150px 120px minmax(0, 1fr) 120px 120px"><div>Time</div><div>Class</div><div>Subject</div><div>Room</div><div>Status</div></div>
+<sc-for list="{{tClasses}}" as="c" hint-placeholder-count="5">
+<div class="tr" style="display: grid; grid-template-columns: 150px 120px minmax(0, 1fr) 120px 120px; align-items: center; color: {{c.fg}}">
+<div>{{c.time}}</div><div style="font-weight: 500">{{c.cls}}</div><div>{{c.subject}}</div><div>{{c.room}}</div>
+<div><span class="pill" style="background: {{c.pillBg}}; color: {{c.pillFg}}">{{c.label}}</span></div>
+</div>
+</sc-for>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: start">
+<div class="card" style="padding: 24px 28px">
+<div style="display: flex; justify-content: space-between; align-items: center"><h2 class="h2">Notice board</h2><button type="button" class="linkbtn" onClick="{{tn.notices.go}}">View all</button></div>
+<div style="display: flex; flex-direction: column; margin-top: 8px">
+<sc-for list="{{noticesTop}}" as="n" hint-placeholder-count="4">
+<div style="padding: 14px 0; border-bottom: 1px solid #EEF1F5"><div style="font-size: 14px; line-height: 1.55">{{n.msg}}</div><div class="eyebrow" style="margin-top: 4px">{{n.date}} · {{n.by}}</div></div>
+</sc-for>
+</div>
+</div>
+<div style="display: flex; flex-direction: column; gap: 32px">
+<div class="card" style="padding: 24px 28px">
+<div style="display: flex; justify-content: space-between; align-items: center"><h2 class="h2">Recent student queries</h2><button type="button" class="linkbtn" onClick="{{tn.queries.go}}">Open inbox</button></div>
+<div style="display: flex; flex-direction: column; margin-top: 8px">
+<sc-for list="{{queriesTop}}" as="q" hint-placeholder-count="2">
+<div style="display: flex; gap: 16px; padding: 14px 0; border-bottom: 1px solid #EEF1F5; align-items: center">
+<div style="flex-grow: 1"><div style="font-size: 14px">{{q.subject}}</div><div class="eyebrow" style="margin-top: 4px">{{q.to}} · {{q.date}}</div></div>
+<span class="pill" style="background: {{q.pillBg}}; color: {{q.pillFg}}">{{q.status}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+<div class="card" style="padding: 24px 28px">
+<h2 class="h2">Lesson plan progress</h2>
+<div style="display: flex; flex-direction: column; gap: 18px; margin-top: 20px">
+<sc-for list="{{lessonPlan}}" as="l" hint-placeholder-count="4">
+<div>
+<div style="display: flex; justify-content: space-between; font-size: 14px"><span>{{l.cls}} · {{l.sub}}</span><span class="muted">{{l.pct}}%</span></div>
+<div class="bar" style="margin-top: 8px"><div style="height: 6px; width: {{l.pct}}%; background: #0D2D52; border-radius: 999px"></div></div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- Faculty: Attendance -->
+<sc-if value="{{ts.attendance}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 32px">
+<div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+<div><label class="lbl" for="att-class">Class</label><select id="att-class" class="inp" value="{{attClass}}" onChange="{{onAttClass}}"><option>II CSE-A</option><option>II CSE-B</option><option>III CSE-A</option></select></div>
+<div><label class="lbl" for="att-sub">Subject</label><select id="att-sub" class="inp" value="{{attSubject}}" onChange="{{onAttSubject}}"><option>Data Structures</option><option>Data Structures Lab</option><option>Compiler Design</option></select></div>
+<div><label class="lbl" for="att-date">Date</label><input id="att-date" class="inp" type="date" value="{{attDate}}" onChange="{{onAttDate}}"></div>
+<div><label class="lbl" for="att-period">Period</label><select id="att-period" class="inp" value="{{attPeriod}}" onChange="{{onAttPeriod}}"><option>Period 1 · 09:30</option><option>Period 2 · 10:20</option><option>Period 3 · 11:20</option><option>Period 4 · 12:10</option><option>Period 5 · 01:40</option><option>Period 6 · 02:30</option></select></div>
+</div>
+<div class="card" style="overflow: hidden">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 24px 28px; gap: 16px; border-bottom: 1px solid #E4E8EE">
+<div><h2 class="h2">{{attClass}} · {{attSubject}}</h2><p class="sub">{{present}} present · {{absent}} absent · {{rosterCount}} students</p></div>
+<div style="display: flex; gap: 8px"><button type="button" class="btn" onClick="{{allPresent}}">Mark all present</button><button type="button" class="btn btn-p" onClick="{{submitAtt}}">Submit attendance</button></div>
+</div>
+<sc-if value="{{attIsSaved}}" hint-placeholder-val="{{false}}"><div style="padding: 12px 28px; background: #EAF5EF; color: #1F6B47; font-size: 13px">Submitted at {{attSaved}}. Students see the update in their Attendance page.</div></sc-if>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; padding: 8px 28px 16px">
+<sc-for list="{{roster}}" as="r" hint-placeholder-count="16">
+<div style="display: flex; align-items: center; gap: 16px; padding: 10px 0; border-bottom: 1px solid #EEF1F5">
+<span class="muted" style="width: 24px; font-size: 13px">{{r.sno}}</span>
+<span style="flex-grow: 1; font-size: 14px; font-weight: 500">{{r.roll}}</span>
+<div style="display: flex; gap: 4px; padding: 3px; background: #EFF2F6; border-radius: 8px">
+<button type="button" aria-pressed="{{r.isP}}" onClick="{{r.markP}}" style="min-height: 38px; min-width: 80px; border-radius: 6px; border: 0; background: {{r.pBg}}; color: {{r.pFg}}; box-shadow: {{r.pSh}}; font-size: 13px; font-weight: 500">Present</button>
+<button type="button" aria-pressed="{{r.isA}}" onClick="{{r.markA}}" style="min-height: 38px; min-width: 80px; border-radius: 6px; border: 0; background: {{r.aBg}}; color: {{r.aFg}}; box-shadow: {{r.aSh}}; font-size: 13px; font-weight: 500">Absent</button>
+</div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- Faculty: Marks Entry -->
+<sc-if value="{{ts.marks}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 32px">
+<div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+<div><label class="lbl" for="m-class">Class</label><select id="m-class" class="inp" value="{{mClass}}" onChange="{{onMClass}}"><option>II CSE-A</option><option>II CSE-B</option><option>III CSE-A</option></select></div>
+<div><label class="lbl" for="m-exam">Assessment</label><select id="m-exam" class="inp" value="{{mExam}}" onChange="{{onMExam}}"><option>Mid-I</option><option>Mid-II</option><option>Assignment-I</option></select></div>
+<div><label class="lbl" for="m-sub">Subject</label><select id="m-sub" class="inp"><option>Data Structures</option><option>Data Structures Lab</option><option>Compiler Design</option></select></div>
+</div>
+<div class="card" style="overflow: hidden">
+<div style="display: flex; justify-content: space-between; align-items: center; padding: 24px 28px; border-bottom: 1px solid #E4E8EE">
+<div><h2 class="h2">{{mClass}} · {{mExam}}, out of 30</h2><p class="sub">{{marksEntered}} of {{rosterCount}} entered</p></div>
+<button type="button" class="btn btn-p" onClick="{{saveMarks}}">Save marks</button>
+</div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 48px; padding: 8px 28px 16px">
+<sc-for list="{{marksRows}}" as="m" hint-placeholder-count="16">
+<div style="display: flex; align-items: center; gap: 16px; padding: 8px 0; border-bottom: 1px solid #EEF1F5">
+<span class="muted" style="width: 24px; font-size: 13px">{{m.sno}}</span>
+<label for="{{m.id}}" style="flex-grow: 1; font-size: 14px; font-weight: 500">{{m.roll}}</label>
+<input id="{{m.id}}" class="inp" inputmode="numeric" value="{{m.value}}" onChange="{{m.onChange}}" placeholder="–" style="width: 80px; text-align: center">
+<span class="pill" style="width: 72px; justify-content: center; background: {{m.pillBg}}; color: {{m.pillFg}}">{{m.status}}</span>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+<!-- Faculty: Assignments -->
+<sc-if value="{{ts.assignments}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 32px; align-items: start">
+<div class="card" style="padding: 28px; display: flex; flex-direction: column; gap: 20px">
+<div><h2 class="h2">New assignment</h2><p class="sub">Published instantly to the student portal</p></div>
+<div><label class="lbl" for="a-title">Title</label><input id="a-title" class="inp" value="{{aTitle}}" onChange="{{onATitle}}" placeholder="e.g. Binary search tree operations"></div>
+<div><label class="lbl" for="a-sub">Subject</label><select id="a-sub" class="inp" value="{{aSubject}}" onChange="{{onASubject}}"><option>Data Structures</option><option>Data Structures Lab</option><option>Compiler Design</option></select></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div><label class="lbl" for="a-class">Class</label><select id="a-class" class="inp" value="{{aClass}}" onChange="{{onAClass}}"><option>II CSE-A</option><option>II CSE-B</option><option>III CSE-A</option></select></div>
+<div><label class="lbl" for="a-due">Due date</label><input id="a-due" class="inp" type="date" value="{{aDue}}" onChange="{{onADue}}"></div>
+</div>
+<button type="button" class="btn btn-p" onClick="{{publishAssign}}">Publish assignment</button>
+</div>
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">Published assignments</h2></div>
+<div class="th" style="display: grid; grid-template-columns: minmax(0, 1fr) 110px 220px"><div>Assignment</div><div>Due</div><div>Submissions</div></div>
+<sc-for list="{{tAssign}}" as="a" hint-placeholder-count="3">
+<div class="tr" style="display: grid; grid-template-columns: minmax(0, 1fr) 110px 220px; align-items: center">
+<div><div>{{a.title}}</div><div class="eyebrow" style="margin-top: 2px">{{a.cls}} · {{a.subject}}</div></div>
+<div class="muted">{{a.dueFmt}}</div>
+<div style="display: flex; align-items: center; gap: 12px"><div class="bar" style="flex-grow: 1"><div style="height: 6px; width: {{a.subPct}}%; background: #0D2D52; border-radius: 999px"></div></div><span style="font-size: 13px; width: 52px; text-align: right">{{a.submitted}} / 62</span></div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<!-- Faculty: Notice Board -->
+<sc-if value="{{ts.notices}}" hint-placeholder-val="{{false}}">
+<div style="display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 32px; align-items: start">
+<div class="card" style="padding: 28px; display: flex; flex-direction: column; gap: 20px">
+<div><h2 class="h2">Post a notice</h2><p class="sub">Appears in the students’ Notifications</p></div>
+<div><label class="lbl" for="n-aud">Audience</label><select id="n-aud" class="inp" value="{{nAudience}}" onChange="{{onNAudience}}"><option>All II B.Tech CSE students</option><option>II CSE-A</option><option>II CSE-B</option><option>III CSE-A</option></select></div>
+<div><label class="lbl" for="n-text">Notice</label><textarea id="n-text" class="inp" value="{{nText}}" onChange="{{onNText}}" placeholder="e.g. DS lab internal exam on 06 Oct. Bring your record."></textarea></div>
+<button type="button" class="btn btn-p" onClick="{{postNotice}}">Post notice</button>
+</div>
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">All notices</h2></div>
+<div class="th" style="display: grid; grid-template-columns: 88px minmax(0, 1fr)"><div>Date</div><div>Notice</div></div>
+<sc-for list="{{notices}}" as="n" hint-placeholder-count="6">
+<div class="tr" style="display: grid; grid-template-columns: 88px minmax(0, 1fr)">
+<div class="muted" style="font-size: 13px">{{n.date}}</div>
+<div><div>{{n.msg}}</div><div class="eyebrow" style="margin-top: 4px">{{n.no}} · {{n.by}}</div></div>
+</div>
+</sc-for>
+</div>
+</div>
+</sc-if>
+
+<!-- Faculty: Student Queries -->
+<sc-if value="{{ts.queries}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 16px; max-width: 820px">
+<sc-if value="{{noQueries}}" hint-placeholder-val="{{false}}"><div class="card" style="padding: 28px; font-size: 14px">No student questions yet.</div></sc-if>
+<sc-for list="{{tQueries}}" as="q" hint-placeholder-count="1">
+<div class="card" style="padding: 24px 28px; display: flex; flex-direction: column; gap: 14px">
+<div style="display: flex; justify-content: space-between; gap: 16px; align-items: flex-start">
+<div><div style="font-size: 15px; font-weight: 500">{{q.subject}}</div><div class="eyebrow" style="margin-top: 4px">[Student Name] · II CSE-A · {{q.to}} · {{q.date}}</div></div>
+<span class="pill" style="background: {{q.pillBg}}; color: {{q.pillFg}}">{{q.status}}</span>
+</div>
+<div style="font-size: 14px; line-height: 1.6; color: #3A3F47">{{q.msg}}</div>
+<sc-if value="{{q.hasReply}}" hint-placeholder-val="{{true}}">
+<div style="padding: 16px 18px; border-radius: 8px; background: #F5F7FA">
+<div class="eyebrow">Your reply</div>
+<div style="font-size: 14px; line-height: 1.6; margin-top: 6px">{{q.reply}}</div>
+</div>
+</sc-if>
+<sc-if value="{{q.pending}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 12px; padding-top: 4px">
+<label class="lbl" for="{{q.rid}}" style="margin: 0">Reply</label>
+<textarea id="{{q.rid}}" class="inp" value="{{q.draft}}" onChange="{{q.onDraft}}" placeholder="Write your reply" style="min-height: 96px"></textarea>
+<div><button type="button" class="btn btn-p" onClick="{{q.send}}">Send reply</button></div>
+</div>
+</sc-if>
+</div>
+</sc-for>
+</div>
+</sc-if>
+
+<!-- Faculty: Leave -->
+<sc-if value="{{ts.leave}}" hint-placeholder-val="{{false}}">
+<div style="display: flex; flex-direction: column; gap: 32px">
+<div class="card" style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr))">
+<div style="padding: 24px 28px"><div class="eyebrow">Casual leave left</div><div class="num">{{clLeft}} <span class="muted" style="font-size: 14px">of 12 days</span></div></div>
+<div style="padding: 24px 28px; border-left: 1px solid #EEF1F5"><div class="eyebrow">Medical leave left</div><div class="num">10 <span class="muted" style="font-size: 14px">of 10 days</span></div></div>
+<div style="padding: 24px 28px; border-left: 1px solid #EEF1F5"><div class="eyebrow">On duty this year</div><div class="num">1 <span class="muted" style="font-size: 14px">day</span></div></div>
+</div>
+<div style="display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 32px; align-items: start">
+<div class="card" style="padding: 28px; display: flex; flex-direction: column; gap: 20px">
+<h2 class="h2">Apply for leave</h2>
+<div><label class="lbl" for="l-type">Leave type</label><select id="l-type" class="inp" value="{{lType}}" onChange="{{onLType}}"><option>Casual leave</option><option>Medical leave</option><option>On duty</option><option>Emergency leave</option></select></div>
+<div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
+<div><label class="lbl" for="l-from">From</label><input id="l-from" class="inp" type="date" value="{{lFrom}}" onChange="{{onLFrom}}"></div>
+<div><label class="lbl" for="l-to">To</label><input id="l-to" class="inp" type="date" value="{{lTo}}" onChange="{{onLTo}}"></div>
+</div>
+<div><label class="lbl" for="l-reason">Reason</label><textarea id="l-reason" class="inp" value="{{lReason}}" onChange="{{onLReason}}" placeholder="Reason for leave" style="min-height: 96px"></textarea></div>
+<button type="button" class="btn btn-p" onClick="{{applyLeave}}">Submit to HOD</button>
+</div>
+<div class="card" style="overflow: hidden">
+<div style="padding: 24px 28px 20px"><h2 class="h2">My leave requests</h2></div>
+<div class="th" style="display: grid; grid-template-columns: 140px 200px minmax(0, 1fr) 100px"><div>Type</div><div>Dates</div><div>Reason</div><div>Status</div></div>
+<sc-for list="{{leaves}}" as="l" hint-placeholder-count="2">
+<div class="tr" style="display: grid; grid-template-columns: 140px 200px minmax(0, 1fr) 100px; align-items: center">
+<div style="font-weight: 500">{{l.type}}</div><div class="muted">{{l.range}}</div><div class="muted">{{l.reason}}</div>
+<div><span class="pill" style="background: {{l.pillBg}}; color: {{l.pillFg}}">{{l.status}}</span></div>
+</div>
+</sc-for>
+</div>
+</div>
+</div>
+</sc-if>
+
+</main>
+</div>
+</div>
+</sc-if>
+
+<!-- Toast -->
+<sc-if value="{{hasToast}}" hint-placeholder-val="{{false}}">
+<div role="status" style="position: absolute; left: 50%; bottom: 32px; transform: translateX(-50%); display: flex; align-items: center; gap: 10px; padding: 14px 20px; border-radius: 10px; background: #0D2D52; color: #FFFFFF; font-size: 14px; box-shadow: 0 8px 24px rgba(21,23,28,.18); max-width: 720px">
+<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9FD8BA" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12l5 5 9-10"></path></svg>{{toast}}
+</div>
+</sc-if>
+
+</div>
+</template>
+<script src="app.js"></script>
+</body>
+</html>

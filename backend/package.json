@@ -1,0 +1,12 @@
+{
+  "name": "campus-erp-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "seed:staff": "node --env-file=.env scripts/seed-staff.mjs data/employees.csv data/accounts.csv",
+    "check": "node --env-file=.env scripts/check.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.117.3"
+  }
+}
